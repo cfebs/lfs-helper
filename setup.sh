@@ -54,6 +54,7 @@ esac
 mkdir -pv $LFS/tools
 
 chown -v -R lfs $LFS/{lib,var,etc,bin,sbin,tools}
+chown -v -R lfs $LFS/usr
 case $(uname -m) in
   x86_64) chown -v lfs $LFS/lib64 ;;
 esac
