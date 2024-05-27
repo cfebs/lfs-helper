@@ -6,9 +6,15 @@ Few helper scripts for https://www.linuxfromscratch.org/lfs/view/12.1/
 
 Read the scripts first.
 
-```
-# take manual steps to setup /mnt/lfs and export to LFS variable for root
+### Toolchain
 
+For use with:
+* https://www.linuxfromscratch.org/lfs/view/12.1/part2.html
+* https://www.linuxfromscratch.org/lfs/view/12.1/part3.html
+
+Make sure to take manual steps to setup `/mnt/lfs` and export to `LFS` variable for root.
+
+```
 $ sudo su -
 
 # can copy these scripts into /mnt/lfs
@@ -38,4 +44,18 @@ $ rm -f ./sources/*.x
 $ ./build.sh
 ```
 
-TODO as I work through guide
+Swap to `root`
+```
+$ ./to_chroot.sh
+```
+
+Now in chroot
+```
+$ ./chroot_build.sh
+$ exit
+
+# can now make a backup of the full toolchain
+$ tar -cJpf $HOME/lfs-temp-tools-12.1.tar.xz .
+```
+
+## System

@@ -23,15 +23,15 @@ echo ">> Creating virtual fs dirs"
 mkdir -pv $LFS/{dev,proc,sys,run}
 
 echo ">> Mounting virtual dirs"
-mount -v --bind /dev $LFS/dev
-mount -vt devpts devpts -o gid=5,mode=0620 $LFS/dev/pts
-mount -vt proc proc $LFS/proc
-mount -vt sysfs sysfs $LFS/sys
-mount -vt tmpfs tmpfs $LFS/run
+mountpoint -q $LFS/dev || mount -v --bind /dev $LFS/dev
+mountpoint -q $LFS/dev/pts || mount -vt devpts devpts -o gid=5,mode=0620 $LFS/dev/pts
+mountpoint -q $LFS/proc || mount -vt proc proc $LFS/proc
+mountpoint -q $LFS/sys || mount -vt sysfs sysfs $LFS/sys
+mountpoint -q $LFS/run || mount -vt tmpfs tmpfs $LFS/run
 if [ -h $LFS/dev/shm ]; then
   install -v -d -m 1777 $LFS$(realpath /dev/shm)
 else
-  mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
+  mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 
 chroot "$LFS" /usr/bin/env -i   \
@@ -42,3 +42,11 @@ chroot "$LFS" /usr/bin/env -i   \
 	MAKEFLAGS="-j$(( $(nproc) - 2 ))" \
     TESTSUITEFLAGS="-j$(( $(nproc) - 2 ))" \
     /bin/bash --login
+
+echo ">> Exited chroot"
+
+echo ">> Cleaning up mounts"
+mountpoint -q $LFS/dev/shm && umount $LFS/dev/shm
+umount $LFS/dev/pts
+umount $LFS/{sys,proc,run,dev}
+echo ">> Done"
