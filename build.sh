@@ -1,10 +1,15 @@
-!/usr/bin/env bash
+#!/usr/bin/env bash
 set -e
 
 VERSION=12.1
 
 if [[ "$(id -nu $(id -u))" != "lfs" ]]; then
 	echo "ERROR: not lfs user, exiting"
+	exit 1;
+fi
+
+if [[ "$(id -u)" == "0" ]]; then
+	echo "ERROR: using root user for build, exiting"
 	exit 1;
 fi
 

@@ -11,9 +11,11 @@ Read the scripts first.
 
 $ sudo su -
 
+# can copy these scripts into /mnt/lfs
+$ cp lfs_scripts/*.sh -t /mnt/lfs
+
 $ cd /mnt/lfs
 
-# can copy these scripts into /mnt/lfs
 
 # ensure no errors in output from version checks
 $ ./version-check.sh
