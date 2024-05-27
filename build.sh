@@ -422,6 +422,182 @@ _build_gzip() {
 _build_thing "gzip"
 
 ################################################################################
+# make
+################################################################################
+
+_build_make() {
+	tar -xvf make-*.tar.gz
+	cd make-*/
+
+	./configure --prefix=/usr   \
+		    --without-guile \
+		    --host=$LFS_TGT \
+		    --build=$(build-aux/config.guess)
+
+	make
+	make DESTDIR=$LFS install
+}
+
+_build_thing "make"
+
+################################################################################
+# patch
+################################################################################
+
+_build_patch() {
+	tar -xvf patch-*.tar.xz
+	cd patch-*/
+
+	./configure --prefix=/usr   \
+		    --host=$LFS_TGT \
+		    --build=$(build-aux/config.guess)
+	make
+	make DESTDIR=$LFS install
+}
+
+_build_thing "patch"
+
+################################################################################
+# sed
+################################################################################
+
+_build_sed() {
+	tar -xvf sed-*.tar.xz
+	cd sed-*/
+
+	./configure --prefix=/usr   \
+		    --host=$LFS_TGT \
+		    --build=$(./build-aux/config.guess)
+	make
+	make DESTDIR=$LFS install
+}
+
+_build_thing "sed"
+
+################################################################################
+# tar
+################################################################################
+
+_build_tar() {
+	tar -xvf tar-*.tar.xz
+	cd tar-*/
+
+	./configure --prefix=/usr                     \
+		    --host=$LFS_TGT                   \
+		    --build=$(build-aux/config.guess)
+
+	make
+	make DESTDIR=$LFS install
+}
+
+_build_thing "tar"
+
+################################################################################
+# xz
+################################################################################
+
+_build_xz() {
+	tar -xvf xz-*.tar.xz
+	cd xz-*/
+
+	./configure --prefix=/usr                     \
+		    --host=$LFS_TGT                   \
+		    --build=$(build-aux/config.guess) \
+		    --disable-static                  \
+		    --docdir=/usr/share/doc/xz-5.4.6
+	make
+	make DESTDIR=$LFS install
+	rm -v $LFS/usr/lib/liblzma.la
+}
+
+_build_thing "xz"
+
+################################################################################
+# binutils_p2
+################################################################################
+
+_build_binutils_p2() {
+	tar -xvf binutils-*.tar.xz
+	cd binutils-*/
+
+	sed '6009s/$add_dir//' -i ltmain.sh
+	mkdir -p -v build_p2
+	cd       build_p2
+
+	../configure                   \
+	    --prefix=/usr              \
+	    --build=$(../config.guess) \
+	    --host=$LFS_TGT            \
+	    --disable-nls              \
+	    --enable-shared            \
+	    --enable-gprofng=no        \
+	    --disable-werror           \
+	    --enable-64-bit-bfd        \
+	    --enable-default-hash-style=gnu
+
+	make
+	make DESTDIR=$LFS install
+	rm -v $LFS/usr/lib/lib{bfd,ctf,ctf-nobfd,opcodes,sframe}.{a,la}
+}
+
+_build_thing "binutils_p2"
+
+################################################################################
+# gcc p2
+################################################################################
+
+_build_gcc_p2() {
+	tar -xvf gcc-*.tar.xz
+	cd gcc-*/
+
+	rm -rf ./mpfr ./gmp ./mpc
+	tar -xf ../mpfr-4.2.1.tar.xz
+	mv -v mpfr-4.2.1 mpfr
+	tar -xf ../gmp-6.3.0.tar.xz
+	mv -v gmp-6.3.0 gmp
+	tar -xf ../mpc-1.3.1.tar.gz
+	mv -v mpc-1.3.1 mpc
+
+	case $(uname -m) in
+	  x86_64)
+	    sed -e '/m64=/s/lib64/lib/' \
+		-i.orig gcc/config/i386/t-linux64
+	  ;;
+	esac
+
+	sed '/thread_header =/s/@.*@/gthr-posix.h/' \
+	    -i libgcc/Makefile.in libstdc++-v3/include/Makefile.in
+
+	mkdir -p -v build_p2
+	cd       build_p2
+
+	../configure                                       \
+	    --build=$(../config.guess)                     \
+	    --host=$LFS_TGT                                \
+	    --target=$LFS_TGT                              \
+	    LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc      \
+	    --prefix=/usr                                  \
+	    --with-build-sysroot=$LFS                      \
+	    --enable-default-pie                           \
+	    --enable-default-ssp                           \
+	    --disable-nls                                  \
+	    --disable-multilib                             \
+	    --disable-libatomic                            \
+	    --disable-libgomp                              \
+	    --disable-libquadmath                          \
+	    --disable-libsanitizer                         \
+	    --disable-libssp                               \
+	    --disable-libvtv                               \
+	    --enable-languages=c,c++
+
+	make
+	make DESTDIR=$LFS install
+	ln -sv gcc $LFS/usr/bin/cc
+}
+
+_build_thing "gcc_p2"
+
+################################################################################
 # TMPL
 ################################################################################
 #
